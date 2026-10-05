@@ -3,20 +3,22 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 
 /// ENOUGH — Floating Dust Particles
-/// 
+///
 /// HOME FEELING:
 /// - Like dust in warm evening sunlight
 /// - Visible enough to feel, not to distract
-/// - Warm amber color
+/// - Configurable color for mood shifts
 /// - Slow, dreamy drift
 class FloatingDust extends StatefulWidget {
   final int particleCount;
   final double maxOpacity;
-  
+  final Color color;
+
   const FloatingDust({
     super.key,
-    this.particleCount = 12,     // Visible presence
-    this.maxOpacity = 0.15,      // Noticeable
+    this.particleCount = 12,
+    this.maxOpacity = 0.15,
+    this.color = AppColors.accentWarm,
   });
 
   @override
@@ -37,7 +39,7 @@ class _FloatingDustState extends State<FloatingDust>
       vsync: this,
       duration: const Duration(seconds: 35),
     )..repeat();
-    
+
     _particles = List.generate(
       widget.particleCount,
       (_) => _DustParticle(_random, widget.maxOpacity),
@@ -60,6 +62,7 @@ class _FloatingDustState extends State<FloatingDust>
             painter: _DustPainter(
               particles: _particles,
               progress: _controller.value,
+              color: widget.color,
             ),
             size: Size.infinite,
           );
@@ -94,10 +97,12 @@ class _DustParticle {
 class _DustPainter extends CustomPainter {
   final List<_DustParticle> particles;
   final double progress;
+  final Color color;
 
   _DustPainter({
     required this.particles,
     required this.progress,
+    required this.color,
   });
 
   @override
@@ -105,11 +110,11 @@ class _DustPainter extends CustomPainter {
     for (final particle in particles) {
       final animProgress = (progress * particle.speed + particle.startY) % 1.0;
       final y = size.height * (1 - animProgress);
-      
+
       // Gentle horizontal drift
       final driftOffset = sin(progress * pi * 0.4 + particle.phase) * 25;
       final x = size.width * particle.x + driftOffset;
-      
+
       // Fade in/out
       double fadeOpacity = particle.baseOpacity;
       if (animProgress < 0.15) {
@@ -117,18 +122,18 @@ class _DustPainter extends CustomPainter {
       } else if (animProgress > 0.85) {
         fadeOpacity *= (1 - animProgress) / 0.15;
       }
-      
+
       // Subtle blink (±15%)
       final blinkValue = sin(progress * 0.5 * 2 * pi + particle.blinkPhase);
       fadeOpacity *= (0.85 + blinkValue * 0.15);
-      
+
       if (fadeOpacity < 0.02) continue;
-      
-      // Use warm accent color - like dust in sunlight
+
+      // Use configurable color
       final paint = Paint()
-        ..color = AppColors.accentWarm.withValues(alpha: fadeOpacity)
+        ..color = color.withValues(alpha: fadeOpacity)
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, particle.size * 1.5);
-      
+
       canvas.drawCircle(
         Offset(x, y),
         particle.size,
@@ -139,6 +144,6 @@ class _DustPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DustPainter oldDelegate) {
-    return oldDelegate.progress != progress;
+    return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }

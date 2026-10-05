@@ -1,18 +1,28 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_durations.dart';
 import '../../../core/services/sound_service.dart';
-import '../widgets/soft_vignette.dart';
+import '../widgets/film_grain.dart';
 import '../widgets/floating_dust.dart';
+import '../widgets/heavy_button.dart';
+import '../widgets/soft_vignette.dart';
 
-/// ENOUGH — Closure Screen
-/// 
-/// DEEP STILLNESS:
-/// - After 5 minutes, the app fades to 100% black.
-/// - A nudge to put the device away and rest.
+/// The Aftermath — Interactive Stardust & Gentle Grounding
+///
+/// Features:
+/// 1. Stardust Embers playground: Touch the screen to stir and scatter the floating stardust embers!
+/// 2. If a burden was imprinted, it gently displays as dissolved into pure light.
+/// 3. Guided calm breathing ring.
+/// 4. Delayed mindful exit button.
 class ClosureScreen extends StatefulWidget {
-  const ClosureScreen({super.key});
+  final String dissolvedThought;
+
+  const ClosureScreen({
+    super.key,
+    this.dissolvedThought = '',
+  });
 
   @override
   State<ClosureScreen> createState() => _ClosureScreenState();
@@ -20,252 +30,450 @@ class ClosureScreen extends StatefulWidget {
 
 class _ClosureScreenState extends State<ClosureScreen>
     with TickerProviderStateMixin {
-  
-  late AnimationController _phaseController;
-  late Animation<double> _warmth;
-  late Animation<double> _haloFade;
-  late Animation<double> _haloGrow;
-  late Animation<double> _textFade;
-  
-  late AnimationController _breathController;
-  late Animation<double> _breathAnimation;
-  
-  // Deep Stillness
-  Timer? _stillnessTimer;
-  bool _isDeepStillness = false;
+  late final AnimationController _arrival = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 950),
+  )..forward();
+
+  late final AnimationController _settle = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2200),
+  )..forward();
+
+  late final AnimationController _breatheController = AnimationController(
+    vsync: this,
+    duration: AppDurations.breatheCycle,
+  )..repeat(reverse: true);
+
+  // Interactive Stardust Touch Point
+  Offset? _stardustTouch;
+  final List<_StardustEmber> _embers = [];
+  final math.Random _random = math.Random();
+  Timer? _emberTimer;
+
+  bool _showButton = false;
 
   @override
   void initState() {
     super.initState();
-    
-    // Total duration for arrival:
-    // 1200ms initial silence + 800ms fade = 2000ms
-    _phaseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    );
-    
-    _warmth = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _phaseController,
-        curve: const Interval(0.0, 0.50, curve: AppDurations.organic),
-      ),
-    );
-    
-    _haloFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _phaseController,
-        curve: const Interval(0.50, 0.90, curve: AppDurations.organic),
-      ),
-    );
-    
-    _haloGrow = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _phaseController,
-        curve: const Interval(0.50, 1.0, curve: AppDurations.organic),
-      ),
-    );
-    
-    // Text fades in after 1200ms
-    _textFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _phaseController,
-        curve: const Interval(0.60, 1.0, curve: Curves.easeIn), // 1200/2000
-      ),
-    );
-    
-    _breathController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 45), // Subconscious breathing
-    )..repeat(reverse: true);
-    
-    _breathAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _breathController,
-        curve: Curves.easeInOut,
-      ),
-    );
-    
-    _phaseController.forward();
-    _playChime();
-    
-    // START DEEP STILLNESS TIMER (5 minutes)
-    _startDeepStillnessTimer();
-  }
-  
-  void _startDeepStillnessTimer() {
-    _stillnessTimer = Timer(const Duration(minutes: 5), () {
-      if (mounted) {
-        setState(() => _isDeepStillness = true);
-      }
-    });
-  }
 
-  Future<void> _playChime() async {
-    // Chime plays only when text is nearly visible
-    await Future.delayed(const Duration(milliseconds: 1400));
-    await SoundService.playClosureChime();
+    unawaited(SoundService.playClosureChime());
+
+    // Generate initial interactive stardust embers
+    for (int i = 0; i < 35; i++) {
+      _embers.add(_StardustEmber(
+        x: _random.nextDouble(),
+        y: _random.nextDouble(),
+        vx: (_random.nextDouble() - 0.5) * 0.002,
+        vy: -0.001 - (_random.nextDouble() * 0.003),
+        size: 2.0 + _random.nextDouble() * 4.0,
+        opacity: 0.3 + _random.nextDouble() * 0.6,
+      ));
+    }
+
+    // Ember simulation tick
+    _emberTimer = Timer.periodic(const Duration(milliseconds: 30), (_) {
+      if (!mounted) return;
+      setState(() {
+        for (final ember in _embers) {
+          ember.y += ember.vy;
+          ember.x += ember.vx;
+
+          // Stir embers towards touch
+          if (_stardustTouch != null) {
+            final media = MediaQuery.sizeOf(context);
+            final touchX = _stardustTouch!.dx / media.width;
+            final touchY = _stardustTouch!.dy / media.height;
+            final dx = touchX - ember.x;
+            final dy = touchY - ember.y;
+            final dist = math.sqrt(dx * dx + dy * dy);
+            if (dist < 0.28 && dist > 0.01) {
+              ember.vx += (dx / dist) * 0.0015;
+              ember.vy += (dy / dist) * 0.0015;
+            }
+          }
+
+          // Wrap edges
+          if (ember.y < 0) ember.y = 1.0;
+          if (ember.x < 0) ember.x = 1.0;
+          if (ember.x > 1) ember.x = 0.0;
+        }
+      });
+    });
+
+    // Delayed exit button
+    Timer(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _showButton = true);
+    });
   }
 
   @override
   void dispose() {
-    _phaseController.dispose();
-    _breathController.dispose();
-    _stillnessTimer?.cancel();
+    _emberTimer?.cancel();
+    _arrival.dispose();
+    _settle.dispose();
+    _breatheController.dispose();
     super.dispose();
   }
+
+  void _back(BuildContext context) => Navigator.of(context).pop();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // MAIN CONTENT
-          AnimatedOpacity(
-            opacity: _isDeepStillness ? 0.0 : 1.0,
-            duration: const Duration(seconds: 10),
-            curve: Curves.easeInOut,
-            child: AnimatedBuilder(
-              animation: Listenable.merge([_warmth, _breathAnimation]),
-              builder: (context, child) {
-                final warmth = _warmth.value;
-                final breath = _breathAnimation.value;
-                
-                return Container(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      center: Alignment(0, -0.08 + (breath * 0.03)),
-                      radius: 1.4,
-                      colors: [
-                        Color.lerp(
-                          AppColors.backgroundDepth,
-                          AppColors.backgroundWarm,
-                          warmth * 0.7,
-                        )!,
-                        Color.lerp(
-                          AppColors.backgroundPrimary,
-                          AppColors.ambientWarm,
-                          warmth * 0.4,
-                        )!,
-                        AppColors.backgroundPrimary,
-                      ],
-                      stops: [0.0, 0.35 + (warmth * 0.1), 1.0],
-                    ),
+      backgroundColor: AppColors.warmInk,
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanUpdate: (d) => setState(() => _stardustTouch = d.localPosition),
+        onPanEnd: (_) => setState(() => _stardustTouch = null),
+        onTapDown: (d) => setState(() => _stardustTouch = d.localPosition),
+        onTapUp: (_) => setState(() => _stardustTouch = null),
+        child: Stack(
+          children: [
+            // Ambient Warm Radial Gradient
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(0.0, -0.15),
+                    radius: 1.3,
+                    colors: [
+                      AppColors.accent.withValues(alpha: .22),
+                      AppColors.warmInk,
+                    ],
+                    stops: const [.0, .85],
                   ),
-                  child: child,
-                );
-              },
-              child: Stack(
-                children: [
-                  const Positioned.fill(
-                    child: FloatingDust(
-                      particleCount: 10,
-                      maxOpacity: 0.12,
-                    ),
-                  ),
-                  
-                  const Positioned.fill(
-                    child: SoftVignette(intensity: 0.6),
-                  ),
-                  
-                  // Halos & Core Glow
-                  Positioned.fill(
-                    child: AnimatedBuilder(
-                      animation: Listenable.merge([_haloFade, _haloGrow, _breathAnimation]),
-                      builder: (context, child) {
-                        final haloVal = _haloFade.value;
-                        return Stack(
-                          children: [
-                            // 6️⃣ WARM CORE (Safety Signal)
-                            Align(
-                              alignment: const Alignment(0, -0.12),
-                              child: Container(
-                                width: 350,
-                                height: 350,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: RadialGradient(
-                                    colors: [
-                                      AppColors.candlelight.withValues(alpha: 0.05 * haloVal),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // Halos
-                            Align(
-                              alignment: const Alignment(0, -0.12),
-                              child: Transform.scale(
-                                scale: _haloGrow.value,
-                                child: Container(
-                                  width: 500,
-                                  height: 320,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(160),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppColors.accentWarm.withValues(
-                                          alpha: haloVal * (0.12 + (_breathAnimation.value * 0.05)),
-                                        ),
-                                        blurRadius: 50,
-                                        spreadRadius: 15,
-                                      ),
-                                      BoxShadow(
-                                        color: AppColors.accentGlow.withValues(
-                                          alpha: haloVal * (0.08 + (_breathAnimation.value * 0.03)),
-                                        ),
-                                        blurRadius: 100 + (_breathAnimation.value * 20),
-                                        spreadRadius: 40,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  
-                  Positioned.fill(
-                    child: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 48),
-                        child: Column(
-                          children: [
-                            const Spacer(flex: 42),
-                            
-                            FadeTransition(
-                              opacity: _textFade,
-                              child: Text(
-                                'It was enough.',
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.closure,
-                              ),
-                            ),
-                            
-                            const Spacer(flex: 58),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-          
-          Positioned.fill(
-            child: Semantics(
-              label: 'It was enough. You are done for today. Rest well.',
-              child: const SizedBox.expand(),
+
+            // Layer 1: Ambient Dust
+            const Positioned.fill(
+              child: FloatingDust(
+                particleCount: 18,
+                maxOpacity: 0.18,
+                color: AppColors.candlelight,
+              ),
             ),
-          ),
-        ],
+
+            // Layer 2: Interactive Stardust Embers (Reactive to touch!)
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _StardustPainter(embers: _embers, touch: _stardustTouch),
+              ),
+            ),
+
+            // Film Grain
+            const Positioned.fill(
+              child: FilmGrain(opacity: 0.025),
+            ),
+
+            // Soft Vignette
+            const Positioned.fill(
+              child: SoftVignette(intensity: 0.7),
+            ),
+
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
+                child: AnimatedBuilder(
+                  animation: _arrival,
+                  builder: (context, child) => Opacity(
+                    opacity: Curves.easeOut.transform(_arrival.value),
+                    child: Transform.translate(
+                      offset: Offset(0, 16 * (1 - _arrival.value)),
+                      child: child,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Header
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.blur_on_rounded,
+                            color: AppColors.glassBlue.withValues(alpha: .9),
+                            size: 22,
+                          ),
+                          const SizedBox(width: 9),
+                          Text(
+                            'ENOUGH',
+                            style: AppTextStyles.eyebrow.copyWith(
+                              color: AppColors.paper.withValues(alpha: .78),
+                              letterSpacing: 2,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            'REST NOW',
+                            style: AppTextStyles.eyebrow.copyWith(
+                              color: AppColors.paper.withValues(alpha: .4),
+                              fontSize: 8.5,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const Spacer(),
+
+                      // Central Aura & Breathing Guide
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Soft Pulsing Breathing Aura
+                          AnimatedBuilder(
+                            animation: _breatheController,
+                            builder: (context, _) {
+                              final bVal = _breatheController.value;
+                              return Container(
+                                width: 210 + (bVal * 35),
+                                height: 210 + (bVal * 35),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.glassBlue.withValues(
+                                      alpha: 0.12 + (bVal * 0.15),
+                                    ),
+                                    width: 1.2,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+
+                          // Settle Mark Painter
+                          AnimatedBuilder(
+                            animation: _settle,
+                            builder: (context, _) => CustomPaint(
+                              size: const Size(220, 220),
+                              painter: _ReleaseMarkPainter(progress: _settle.value),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // Headline
+                      Text(
+                        'You let it out.',
+                        style: AppTextStyles.hero.copyWith(
+                          fontSize: 38,
+                          color: AppColors.paper,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Dissolved Thought Notice OR Breath Cue
+                      if (widget.dissolvedThought.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassBlue.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.glassBlue.withValues(alpha: 0.2)),
+                          ),
+                          child: Text(
+                            '"${widget.dissolvedThought}" is gone into the light.',
+                            style: AppTextStyles.body.copyWith(
+                              color: AppColors.glassBlue,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        )
+                      else
+                        AnimatedBuilder(
+                          animation: _breatheController,
+                          builder: (context, _) {
+                            final isExhale = _breatheController.status == AnimationStatus.reverse;
+                            return Text(
+                              isExhale ? 'Breathe out slowly.' : 'Breathe in peace.',
+                              style: AppTextStyles.body.copyWith(
+                                color: AppColors.paper.withValues(alpha: .68),
+                                fontSize: 15,
+                                letterSpacing: .5,
+                              ),
+                            );
+                          },
+                        ),
+
+                      const SizedBox(height: 8),
+                      Text(
+                        'Touch the screen to stir the stardust embers.',
+                        style: AppTextStyles.eyebrow.copyWith(
+                          color: AppColors.paper.withValues(alpha: 0.35),
+                          fontSize: 9,
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      // Delayed Exit Action
+                      AnimatedOpacity(
+                        opacity: _showButton ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 800),
+                        child: IgnorePointer(
+                          ignoring: !_showButton,
+                          child: HeavyButton(
+                            label: 'Ground myself',
+                            onConfirm: () => _back(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class _StardustEmber {
+  double x;
+  double y;
+  double vx;
+  double vy;
+  double size;
+  double opacity;
+
+  _StardustEmber({
+    required this.x,
+    required this.y,
+    required this.vx,
+    required this.vy,
+    required this.size,
+    required this.opacity,
+  });
+}
+
+class _StardustPainter extends CustomPainter {
+  final List<_StardustEmber> embers;
+  final Offset? touch;
+
+  _StardustPainter({required this.embers, required this.touch});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final ember in embers) {
+      final paint = Paint()
+        ..color = AppColors.candlelight.withValues(alpha: ember.opacity)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, ember.size * 0.8);
+
+      canvas.drawCircle(
+        Offset(ember.x * size.width, ember.y * size.height),
+        ember.size,
+        paint,
+      );
+    }
+
+    // Touch Ripple
+    if (touch != null) {
+      canvas.drawCircle(
+        touch!,
+        32,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0
+          ..color = AppColors.glassBlue.withValues(alpha: 0.25)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _StardustPainter oldDelegate) => true;
+}
+
+class _ReleaseMarkPainter extends CustomPainter {
+  final double progress;
+  const _ReleaseMarkPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final travel = 115 * Curves.easeOutCubic.transform(progress);
+    final fade = math.pow(1 - progress, 1.4).toDouble();
+
+    // Dissolving Shards into particles
+    for (var i = 0; i < 12; i++) {
+      final angle =
+          math.pi * 2 * i / 12 - math.pi / 2 + (i.isEven ? .08 : -.06);
+      final distance = travel * (.7 + (i % 3) * .14);
+      final point = Offset(
+        center.dx + math.cos(angle) * distance,
+        center.dy + math.sin(angle) * distance,
+      );
+      final width = 7.0 + (i % 3) * 2.0;
+      final height = 12.0 + (i % 4) * 3.0;
+
+      final shard = Path()
+        ..moveTo(-width * .36, -height * .48)
+        ..lineTo(width * .42, -height * .36)
+        ..lineTo(width * .5, height * .08)
+        ..lineTo(width * .12, height * .5)
+        ..lineTo(-width * .48, height * .28)
+        ..close();
+
+      canvas.save();
+      canvas.translate(point.dx, point.dy);
+      canvas.rotate(angle + progress * (i.isEven ? .42 : -.38));
+      canvas.drawPath(
+        shard,
+        Paint()
+          ..color = (i.isEven ? AppColors.glassBlue : AppColors.glassLilac)
+              .withValues(alpha: .5 * fade),
+      );
+      canvas.drawPath(
+        shard,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .8
+          ..color = Colors.white.withValues(alpha: .7 * fade),
+      );
+      canvas.restore();
+    }
+
+    // Gentle central circle
+    final coreRadius = 32 + 20 * Curves.easeOutBack.transform(progress);
+    canvas.drawCircle(
+      center,
+      coreRadius,
+      Paint()..color = AppColors.accent.withValues(alpha: .22),
+    );
+    canvas.drawCircle(
+      center,
+      coreRadius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..color = AppColors.glassBlue.withValues(alpha: .8),
+    );
+
+    // Cathartic Checkmark
+    final check = Path()
+      ..moveTo(center.dx - 13, center.dy)
+      ..lineTo(center.dx - 3, center.dy + 10)
+      ..lineTo(center.dx + 16, center.dy - 12);
+
+    canvas.drawPath(
+      check,
+      Paint()
+        ..color = AppColors.paper
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _ReleaseMarkPainter oldDelegate) =>
+      progress != oldDelegate.progress;
 }

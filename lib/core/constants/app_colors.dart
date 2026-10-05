@@ -1,86 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// ENOUGH — Color Constants
-/// 
-/// HOME FEELING: Warm. Cozy. Safe. Like late evening light.
+/// Quiet porcelain and soft indigo: distinct from ENOUGH's earlier dark/red stamp look.
 abstract class AppColors {
-  // Backgrounds - warmer, more amber undertones
-  static const Color backgroundPrimary = Color(0xFF151210);  // Warm dark
-  static const Color backgroundDepth = Color(0xFF1E1712);    // Warm brown
-  static const Color backgroundWarm = Color(0xFF231A14);     // Cozy amber-brown
-  
-  // Text - cream with slight warmth
-  static const Color primaryText = Color(0xFFF0E8D8);        // Warmer cream
-  static const Color secondaryText = Color(0xFFA89B8C);      // Warm grey
-  
-  // Accent - richer amber/gold (more visible, more home-like)
-  static const Color accentGlow = Color(0xFFD4A855);         // Richer gold
-  static const Color accentWarm = Color(0xFFE8B860);         // Brighter amber for halos
-  
-  // Cozy ambient colors
-  static const Color ambientWarm = Color(0xFF2A1E16);        // Warm shadow
-  static const Color candlelight = Color(0xFFFFC864);        // Like candlelight
-  
-  // Derived colors with opacity for premium effects
-  static Color get secondaryTextSubtle => secondaryText.withValues(alpha: 0.55);
-  static Color get accentGlowSubtle => accentGlow.withValues(alpha: 0.10);
-  static Color get accentGlowMedium => accentGlow.withValues(alpha: 0.18);
-  
-  // Vignette gradient - warmer edges
+  static const Color paper = Color(0xFFEEF0F7);
+  static const Color paperLight = Color(0xFFFAFAFD);
+  static const Color ink = Color(0xFF151826);
+  static const Color inkSoft = Color(0xFF696D7C);
+  static const Color accent = Color(0xFF625DB8);
+  static const Color accentSoft = Color(0xFFDADBF8);
+  static const Color glassBlue = Color(0xFF8ADDE5);
+  static const Color glassLilac = Color(0xFFBDAAFB);
+
+  // Orb ritual colors
+  static const Color orbCore = Color(0xFF8B7BFF);
+  static const Color orbGlow = Color(0xFF6B5CE7);
+  static const Color orbHot = Color(0xFFFF6B6B);
+  static const Color warmInk = Color(0xFF1A1428);
+
+  // Compatibility names used by the app theme and older widgets.
+  static const Color vermilion = accent;
+  static const Color backgroundPrimary = paper;
+  static const Color backgroundDepth = ink;
+  static const Color backgroundWarm = Color(0xFFE6E8F2);
+  static const Color primaryText = ink;
+  static const Color secondaryText = inkSoft;
+  static const Color accentGlow = accent;
+  static const Color accentWarm = accent;
+  static const Color ambientWarm = accentSoft;
+  static const Color candlelight = Color(0xFFC6C8E7);
+  static Color get secondaryTextSubtle => inkSoft.withValues(alpha: .55);
+  static Color get accentGlowSubtle => accent.withValues(alpha: .1);
+  static Color get accentGlowMedium => accent.withValues(alpha: .18);
   static const List<Color> vignetteGradient = [
     Colors.transparent,
-    Color(0x22100A06),  // Warm tint
-    Color(0x66080504),  // Warm dark
+    Color(0x22191A2A),
+    Color(0x66131320),
   ];
-  
-  // Button glow gradient (premium)
   static List<Color> get buttonGlowGradient => [
-    accentGlow.withValues(alpha: 0.0),
-    accentGlow.withValues(alpha: 0.08),
-    accentGlow.withValues(alpha: 0.15),
-    accentGlow.withValues(alpha: 0.08),
-    accentGlow.withValues(alpha: 0.0),
+    accent.withValues(alpha: 0),
+    accent.withValues(alpha: .08),
+    accent.withValues(alpha: .15),
+    accent.withValues(alpha: .08),
+    accent.withValues(alpha: 0),
   ];
-
-  // Soft warm shadows for humanity
-  static List<Shadow> get soulfulShadow => [
-    Shadow(
-      color: candlelight.withValues(alpha: 0.12),
-      blurRadius: 12,
-      offset: const Offset(0, 2),
-    ),
-  ];
+  static List<Shadow> get soulfulShadow => const [];
 }
 
-/// ENOUGH — Text Styles with Lora font
 abstract class AppTextStyles {
-  // Primary text style (Lora - warm, literary)
-  static TextStyle get primary => GoogleFonts.lora(
-    color: AppColors.primaryText.withValues(alpha: 0.90), // Spoken, not rendered
-    fontWeight: FontWeight.w300,
-    height: 1.6,
-    shadows: AppColors.soulfulShadow,
+  static TextStyle get eyebrow => GoogleFonts.spaceMono(
+    color: AppColors.inkSoft,
+    fontSize: 10,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 1.2,
   );
-
-  // Entry screen text (anticipation)
-  static TextStyle get entry => primary.copyWith(
-    fontSize: 28,
-    letterSpacing: 1.1, // Breathing room
+  static TextStyle get wordmark => GoogleFonts.bebasNeue(
+    color: AppColors.ink,
+    fontSize: 62,
+    height: .95,
+    letterSpacing: 1.1,
   );
-
-  // Closure screen text (arrival)
-  static TextStyle get closure => primary.copyWith(
-    fontSize: 34,
-    letterSpacing: 0.2, // Finality
+  static TextStyle get hero => GoogleFonts.dmSerifDisplay(
+    color: AppColors.paperLight,
+    fontSize: 39,
+    height: 1.05,
   );
-
-  // Button text
-  static TextStyle get button => GoogleFonts.lora(
-    color: AppColors.primaryText.withValues(alpha: 0.88),
-    fontSize: 17,
-    fontWeight: FontWeight.w500,
-    letterSpacing: 5.5,
-    shadows: AppColors.soulfulShadow,
+  static TextStyle get headline => GoogleFonts.dmSerifDisplay(
+    color: AppColors.ink,
+    fontSize: 42,
+    height: 1.08,
+  );
+  static TextStyle get body =>
+      GoogleFonts.dmSans(color: AppColors.inkSoft, fontSize: 16, height: 1.5);
+  static TextStyle get pageQuote => GoogleFonts.dmSerifDisplay(
+    color: AppColors.ink,
+    fontSize: 20,
+    height: 1.22,
+  );
+  static TextStyle get stamp => GoogleFonts.spaceMono(
+    color: AppColors.accent,
+    fontSize: 11,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 1.2,
+  );
+  static TextStyle get primary =>
+      GoogleFonts.dmSerifDisplay(color: AppColors.primaryText, height: 1.2);
+  static TextStyle get entry => headline;
+  static TextStyle get closure => GoogleFonts.dmSerifDisplay(
+    color: AppColors.ink,
+    fontSize: 40,
+    height: 1.08,
+  );
+  static TextStyle get button => GoogleFonts.dmSans(
+    color: AppColors.paperLight,
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    letterSpacing: .2,
   );
 }

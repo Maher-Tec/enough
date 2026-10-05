@@ -1,25 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../core/constants/app_colors.dart';
-import '../core/services/day_guard_service.dart';
-import '../core/services/haptic_service.dart';
 import '../core/services/sound_service.dart';
 import '../features/enough/screens/entry_screen.dart';
-import '../features/enough/widgets/film_grain.dart';
 
 /// ENOUGH — Main App Widget
-/// 
-/// A quiet app that gives you permission to stop — once per day.
-/// 
-/// Dark theme, full-screen experience, no navigation bar.
-/// Silence is the default.
+///
+/// A quiet app that gives you permission to stop whenever you need.
+///
+/// Deep, quiet theme with an interactive release ritual and no automatic sound.
 class EnoughApp extends StatelessWidget {
-  final DayGuardService dayGuard;
-  
-  const EnoughApp({
-    super.key,
-    required this.dayGuard,
-  });
+  const EnoughApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,23 +19,21 @@ class EnoughApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    
+
     // Immersive full-screen mode
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.edgeToEdge,
-      overlays: [],
-    );
-    
-    // Dark system bars
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: []);
+
+    // High-contrast icons on ENOUGH's deep background.
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
+        statusBarBrightness: Brightness.dark,
         statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarColor: AppColors.ink,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
-    
+
     return MaterialApp(
       title: 'ENOUGH',
       debugShowCheckedModeBanner: false,
@@ -59,19 +48,9 @@ class EnoughApp extends StatelessWidget {
           onSurface: AppColors.primaryText,
         ),
         // No app bar, no navigation
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          toolbarHeight: 0,
-        ),
+        appBarTheme: const AppBarTheme(elevation: 0, toolbarHeight: 0),
       ),
-      home: Stack(
-        children: [
-          EntryScreen(dayGuard: dayGuard),
-          const Positioned.fill(
-            child: FilmGrain(opacity: 0.015), // Very subtle global texture
-          ),
-        ],
-      ),
+      home: const EntryScreen(),
     );
   }
 }
@@ -79,12 +58,6 @@ class EnoughApp extends StatelessWidget {
 /// Initialize and run the app
 Future<void> initializeEnough() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize services
-  final dayGuard = DayGuardService();
-  await dayGuard.init();
-  await HapticService.init();
   await SoundService.init();
-  
-  runApp(EnoughApp(dayGuard: dayGuard));
+  runApp(const EnoughApp());
 }

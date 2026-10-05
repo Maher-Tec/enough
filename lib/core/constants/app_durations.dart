@@ -34,4 +34,11 @@ abstract class AppDurations {
   static const Curve primary = organic;
   static const Curve subtle = Curves.easeOutQuart;
   static const Curve slow = Curves.easeInOutQuart;
+
+  // Ritual phases
+  static const Duration orbBreathe = Duration(milliseconds: 3200);
+  static const Duration orbBuildUp = Duration(milliseconds: 2500);
+  static const Duration glassAppear = Duration(milliseconds: 800);
+  static const Duration whiteFlash = Duration(milliseconds: 500);
+  static const Duration breatheCycle = Duration(milliseconds: 4000);
 }
