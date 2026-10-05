@@ -42,18 +42,6 @@
 
 ---
 
-## 📸 Experience Walkthrough
-
-<div align="center">
-
-| Phase 1: The Weight | Phase 2: The Shatter | Phase 3: The Calm |
-| :---: | :---: | :---: |
-| <img src="screens/1.jpg" width="240" alt="The Weight" /> | <img src="screens/2.jpg" width="240" alt="The Shatter" /> | <img src="screens/3.jpg" width="240" alt="The Calm" /> |
-| *Imprint burden & build strain* | *Catastrophic 3D crystal fracture* | *Interactive stardust & breathing guide* |
-
-</div>
-
----
 
 ## 🛠️ Tech Stack & Dependencies
 
