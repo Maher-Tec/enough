@@ -9,20 +9,10 @@ import '../widgets/floating_dust.dart';
 import '../widgets/heavy_button.dart';
 import '../widgets/soft_vignette.dart';
 
-/// The Aftermath — Interactive Stardust & Gentle Grounding
-///
-/// Features:
-/// 1. Stardust Embers playground: Touch the screen to stir and scatter the floating stardust embers!
-/// 2. If a burden was imprinted, it gently displays as dissolved into pure light.
-/// 3. Guided calm breathing ring.
-/// 4. Delayed mindful exit button.
 class ClosureScreen extends StatefulWidget {
   final String dissolvedThought;
 
-  const ClosureScreen({
-    super.key,
-    this.dissolvedThought = '',
-  });
+  const ClosureScreen({super.key, this.dissolvedThought = ''});
 
   @override
   State<ClosureScreen> createState() => _ClosureScreenState();
@@ -45,7 +35,6 @@ class _ClosureScreenState extends State<ClosureScreen>
     duration: AppDurations.breatheCycle,
   )..repeat(reverse: true);
 
-  // Interactive Stardust Touch Point
   Offset? _stardustTouch;
   final List<_StardustEmber> _embers = [];
   final math.Random _random = math.Random();
@@ -59,19 +48,19 @@ class _ClosureScreenState extends State<ClosureScreen>
 
     unawaited(SoundService.playClosureChime());
 
-    // Generate initial interactive stardust embers
     for (int i = 0; i < 35; i++) {
-      _embers.add(_StardustEmber(
-        x: _random.nextDouble(),
-        y: _random.nextDouble(),
-        vx: (_random.nextDouble() - 0.5) * 0.002,
-        vy: -0.001 - (_random.nextDouble() * 0.003),
-        size: 2.0 + _random.nextDouble() * 4.0,
-        opacity: 0.3 + _random.nextDouble() * 0.6,
-      ));
+      _embers.add(
+        _StardustEmber(
+          x: _random.nextDouble(),
+          y: _random.nextDouble(),
+          vx: (_random.nextDouble() - 0.5) * 0.002,
+          vy: -0.001 - (_random.nextDouble() * 0.003),
+          size: 2.0 + _random.nextDouble() * 4.0,
+          opacity: 0.3 + _random.nextDouble() * 0.6,
+        ),
+      );
     }
 
-    // Ember simulation tick
     _emberTimer = Timer.periodic(const Duration(milliseconds: 30), (_) {
       if (!mounted) return;
       setState(() {
@@ -79,7 +68,6 @@ class _ClosureScreenState extends State<ClosureScreen>
           ember.y += ember.vy;
           ember.x += ember.vx;
 
-          // Stir embers towards touch
           if (_stardustTouch != null) {
             final media = MediaQuery.sizeOf(context);
             final touchX = _stardustTouch!.dx / media.width;
@@ -93,7 +81,6 @@ class _ClosureScreenState extends State<ClosureScreen>
             }
           }
 
-          // Wrap edges
           if (ember.y < 0) ember.y = 1.0;
           if (ember.x < 0) ember.x = 1.0;
           if (ember.x > 1) ember.x = 0.0;
@@ -101,7 +88,6 @@ class _ClosureScreenState extends State<ClosureScreen>
       });
     });
 
-    // Delayed exit button
     Timer(const Duration(seconds: 4), () {
       if (mounted) setState(() => _showButton = true);
     });
@@ -130,7 +116,6 @@ class _ClosureScreenState extends State<ClosureScreen>
         onTapUp: (_) => setState(() => _stardustTouch = null),
         child: Stack(
           children: [
-            // Ambient Warm Radial Gradient
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
@@ -147,7 +132,6 @@ class _ClosureScreenState extends State<ClosureScreen>
               ),
             ),
 
-            // Layer 1: Ambient Dust
             const Positioned.fill(
               child: FloatingDust(
                 particleCount: 18,
@@ -156,22 +140,18 @@ class _ClosureScreenState extends State<ClosureScreen>
               ),
             ),
 
-            // Layer 2: Interactive Stardust Embers (Reactive to touch!)
             Positioned.fill(
               child: CustomPaint(
-                painter: _StardustPainter(embers: _embers, touch: _stardustTouch),
+                painter: _StardustPainter(
+                  embers: _embers,
+                  touch: _stardustTouch,
+                ),
               ),
             ),
 
-            // Film Grain
-            const Positioned.fill(
-              child: FilmGrain(opacity: 0.025),
-            ),
+            const Positioned.fill(child: FilmGrain(opacity: 0.025)),
 
-            // Soft Vignette
-            const Positioned.fill(
-              child: SoftVignette(intensity: 0.7),
-            ),
+            const Positioned.fill(child: SoftVignette(intensity: 0.7)),
 
             SafeArea(
               child: Padding(
@@ -187,7 +167,6 @@ class _ClosureScreenState extends State<ClosureScreen>
                   ),
                   child: Column(
                     children: [
-                      // Header
                       Row(
                         children: [
                           Icon(
@@ -217,11 +196,9 @@ class _ClosureScreenState extends State<ClosureScreen>
 
                       const Spacer(),
 
-                      // Central Aura & Breathing Guide
                       Stack(
                         alignment: Alignment.center,
                         children: [
-                          // Soft Pulsing Breathing Aura
                           AnimatedBuilder(
                             animation: _breatheController,
                             builder: (context, _) {
@@ -242,12 +219,13 @@ class _ClosureScreenState extends State<ClosureScreen>
                             },
                           ),
 
-                          // Settle Mark Painter
                           AnimatedBuilder(
                             animation: _settle,
                             builder: (context, _) => CustomPaint(
                               size: const Size(220, 220),
-                              painter: _ReleaseMarkPainter(progress: _settle.value),
+                              painter: _ReleaseMarkPainter(
+                                progress: _settle.value,
+                              ),
                             ),
                           ),
                         ],
@@ -255,7 +233,6 @@ class _ClosureScreenState extends State<ClosureScreen>
 
                       const SizedBox(height: 32),
 
-                      // Headline
                       Text(
                         'You let it out.',
                         style: AppTextStyles.hero.copyWith(
@@ -266,14 +243,18 @@ class _ClosureScreenState extends State<ClosureScreen>
                       ),
                       const SizedBox(height: 10),
 
-                      // Dissolved Thought Notice OR Breath Cue
                       if (widget.dissolvedThought.isNotEmpty)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.glassBlue.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.glassBlue.withValues(alpha: 0.2)),
+                            border: Border.all(
+                              color: AppColors.glassBlue.withValues(alpha: 0.2),
+                            ),
                           ),
                           child: Text(
                             '"${widget.dissolvedThought}" is gone into the light.',
@@ -288,9 +269,13 @@ class _ClosureScreenState extends State<ClosureScreen>
                         AnimatedBuilder(
                           animation: _breatheController,
                           builder: (context, _) {
-                            final isExhale = _breatheController.status == AnimationStatus.reverse;
+                            final isExhale =
+                                _breatheController.status ==
+                                AnimationStatus.reverse;
                             return Text(
-                              isExhale ? 'Breathe out slowly.' : 'Breathe in peace.',
+                              isExhale
+                                  ? 'Breathe out slowly.'
+                                  : 'Breathe in peace.',
                               style: AppTextStyles.body.copyWith(
                                 color: AppColors.paper.withValues(alpha: .68),
                                 fontSize: 15,
@@ -311,7 +296,6 @@ class _ClosureScreenState extends State<ClosureScreen>
 
                       const Spacer(),
 
-                      // Delayed Exit Action
                       AnimatedOpacity(
                         opacity: _showButton ? 1.0 : 0.0,
                         duration: const Duration(milliseconds: 800),
@@ -373,7 +357,6 @@ class _StardustPainter extends CustomPainter {
       );
     }
 
-    // Touch Ripple
     if (touch != null) {
       canvas.drawCircle(
         touch!,
@@ -401,7 +384,6 @@ class _ReleaseMarkPainter extends CustomPainter {
     final travel = 115 * Curves.easeOutCubic.transform(progress);
     final fade = math.pow(1 - progress, 1.4).toDouble();
 
-    // Dissolving Shards into particles
     for (var i = 0; i < 12; i++) {
       final angle =
           math.pi * 2 * i / 12 - math.pi / 2 + (i.isEven ? .08 : -.06);
@@ -440,7 +422,6 @@ class _ReleaseMarkPainter extends CustomPainter {
       canvas.restore();
     }
 
-    // Gentle central circle
     final coreRadius = 32 + 20 * Curves.easeOutBack.transform(progress);
     canvas.drawCircle(
       center,
@@ -456,7 +437,6 @@ class _ReleaseMarkPainter extends CustomPainter {
         ..color = AppColors.glassBlue.withValues(alpha: .8),
     );
 
-    // Cathartic Checkmark
     final check = Path()
       ..moveTo(center.dx - 13, center.dy)
       ..lineTo(center.dx - 3, center.dy + 10)

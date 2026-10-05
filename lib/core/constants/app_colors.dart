@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Quiet porcelain and soft indigo: distinct from ENOUGH's earlier dark/red stamp look.
 abstract class AppColors {
   static const Color paper = Color(0xFFEEF0F7);
   static const Color paperLight = Color(0xFFFAFAFD);
@@ -12,13 +11,11 @@ abstract class AppColors {
   static const Color glassBlue = Color(0xFF8ADDE5);
   static const Color glassLilac = Color(0xFFBDAAFB);
 
-  // Orb ritual colors
   static const Color orbCore = Color(0xFF8B7BFF);
   static const Color orbGlow = Color(0xFF6B5CE7);
   static const Color orbHot = Color(0xFFFF6B6B);
   static const Color warmInk = Color(0xFF1A1428);
 
-  // Compatibility names used by the app theme and older widgets.
   static const Color vermilion = accent;
   static const Color backgroundPrimary = paper;
   static const Color backgroundDepth = ink;

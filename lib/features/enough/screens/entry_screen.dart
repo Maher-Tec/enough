@@ -14,14 +14,6 @@ import '../widgets/heavy_button.dart';
 import '../widgets/soft_vignette.dart';
 import 'closure_screen.dart';
 
-/// ENOUGH — The Living Crystal Ritual
-///
-/// Features:
-/// 1. Interactive 3D Crystal with tilt parallax & fluid specular reflection.
-/// 2. Thought Imprint: Tap to infuse a word or burden into the core of the sphere.
-/// 3. Elastic Deformation: Touch dents the sphere surface before it fractures.
-/// 4. Micro-Haptic sequence: Strain frequency accelerates under hold.
-/// 5. Devastating explosion into 3D crystal shards that dissolve the imprinted burden.
 class EntryScreen extends StatefulWidget {
   const EntryScreen({super.key});
 
@@ -31,39 +23,32 @@ class EntryScreen extends StatefulWidget {
 
 class _EntryScreenState extends State<EntryScreen>
     with TickerProviderStateMixin {
-  // Idle breathing & shimmer loop
   late final AnimationController _breatheController = AnimationController(
     vsync: this,
     duration: AppDurations.orbBreathe,
   )..repeat(reverse: true);
 
-  // Pressure accumulation
   late final AnimationController _pressureController = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 3200),
   );
 
-  // Shatter detonation
   late final AnimationController _shatterController = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1300),
   );
 
-  // Cathartic white flash
   late final AnimationController _flashController = AnimationController(
     vsync: this,
     duration: AppDurations.whiteFlash,
   );
 
-  // Text controller for "Thought Imprint"
   final TextEditingController _thoughtController = TextEditingController();
   String _imprintedThought = '';
 
-  // Day guard
   bool _canUseToday = true;
   final DayGuardService _dayGuard = DayGuardService();
 
-  // Touch & Deformation State
   Offset _touchPoint = const Offset(0.5, 0.5);
   double _indentDepth = 0.0;
   double _swipeEnergy = 0.0;
@@ -79,7 +64,6 @@ class _EntryScreenState extends State<EntryScreen>
     TiltService.start();
     _checkDayGuard();
 
-    // 60fps refresh ticker for smooth device tilt reflection updates
     _ticker = Timer.periodic(const Duration(milliseconds: 20), (_) {
       if (mounted && !_isExploding) {
         setState(() {});
@@ -120,7 +104,6 @@ class _EntryScreenState extends State<EntryScreen>
     HapticService.subtle();
     _pressureController.forward();
 
-    // Accelerating micro-haptic tension loop
     _hapticLoop?.cancel();
     _hapticLoop = Timer.periodic(const Duration(milliseconds: 150), (timer) {
       if (_isExploding) {
@@ -160,7 +143,10 @@ class _EntryScreenState extends State<EntryScreen>
     if (_isExploding) return;
     _swipeEnergy += details.delta.distance;
     final added = details.delta.distance / 110.0;
-    _pressureController.value = (_pressureController.value + added).clamp(0.0, 1.0);
+    _pressureController.value = (_pressureController.value + added).clamp(
+      0.0,
+      1.0,
+    );
 
     if (_pressureController.value >= 0.95 || _swipeEnergy > 170) {
       _detonate();
@@ -179,27 +165,42 @@ class _EntryScreenState extends State<EntryScreen>
           ),
           title: Text(
             'Imprint what weighs on you',
-            style: AppTextStyles.hero.copyWith(fontSize: 22, color: AppColors.paper),
+            style: AppTextStyles.hero.copyWith(
+              fontSize: 22,
+              color: AppColors.paper,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Type a word, worry, or memory to trap inside the crystal before breaking it.',
-                style: AppTextStyles.body.copyWith(fontSize: 13, color: AppColors.inkSoft),
+                style: AppTextStyles.body.copyWith(
+                  fontSize: 13,
+                  color: AppColors.inkSoft,
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _thoughtController,
                 autofocus: true,
                 maxLength: 28,
-                style: AppTextStyles.hero.copyWith(color: AppColors.glassBlue, fontSize: 18),
+                style: AppTextStyles.hero.copyWith(
+                  color: AppColors.glassBlue,
+                  fontSize: 18,
+                ),
                 decoration: InputDecoration(
-                  counterStyle: AppTextStyles.eyebrow.copyWith(color: AppColors.paper.withValues(alpha: 0.4)),
+                  counterStyle: AppTextStyles.eyebrow.copyWith(
+                    color: AppColors.paper.withValues(alpha: 0.4),
+                  ),
                   hintText: 'e.g., Burnout, Anxiety, Heavy heart',
-                  hintStyle: AppTextStyles.body.copyWith(color: AppColors.inkSoft.withValues(alpha: 0.5)),
+                  hintStyle: AppTextStyles.body.copyWith(
+                    color: AppColors.inkSoft.withValues(alpha: 0.5),
+                  ),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.glassBlue.withValues(alpha: 0.3)),
+                    borderSide: BorderSide(
+                      color: AppColors.glassBlue.withValues(alpha: 0.3),
+                    ),
                   ),
                   focusedBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: AppColors.glassBlue),
@@ -215,18 +216,28 @@ class _EntryScreenState extends State<EntryScreen>
                 _thoughtController.clear();
                 Navigator.pop(ctx);
               },
-              child: Text('Clear', style: AppTextStyles.eyebrow.copyWith(color: AppColors.inkSoft)),
+              child: Text(
+                'Clear',
+                style: AppTextStyles.eyebrow.copyWith(color: AppColors.inkSoft),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () {
-                setState(() => _imprintedThought = _thoughtController.text.trim());
+                setState(
+                  () => _imprintedThought = _thoughtController.text.trim(),
+                );
                 Navigator.pop(ctx);
               },
-              child: Text('Imprint', style: AppTextStyles.button.copyWith(fontSize: 14)),
+              child: Text(
+                'Imprint',
+                style: AppTextStyles.button.copyWith(fontSize: 14),
+              ),
             ),
           ],
         );
@@ -248,7 +259,6 @@ class _EntryScreenState extends State<EntryScreen>
     await _shatterController.forward();
     if (!mounted) return;
 
-    // White flash
     await _flashController.forward();
     if (!mounted) return;
 
@@ -257,7 +267,8 @@ class _EntryScreenState extends State<EntryScreen>
 
     await Navigator.of(context).push<void>(
       PageRouteBuilder<void>(
-        pageBuilder: (_, _, _) => ClosureScreen(dissolvedThought: _imprintedThought),
+        pageBuilder: (_, _, _) =>
+            ClosureScreen(dissolvedThought: _imprintedThought),
         transitionsBuilder: (_, animation, _, child) => FadeTransition(
           opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
           child: child,
@@ -292,7 +303,6 @@ class _EntryScreenState extends State<EntryScreen>
         children: [
           const Positioned.fill(child: ColoredBox(color: AppColors.ink)),
 
-          // Dynamic Parallax Orb Ambient Glow
           Positioned(
             top: -100 + (TiltService.tiltY * 30),
             right: -90 - (TiltService.tiltX * 30),
@@ -313,7 +323,6 @@ class _EntryScreenState extends State<EntryScreen>
             ),
           ),
 
-          // Ambient Particles
           const Positioned.fill(
             child: FloatingDust(
               particleCount: 16,
@@ -322,15 +331,9 @@ class _EntryScreenState extends State<EntryScreen>
             ),
           ),
 
-          // Tactile Film Grain
-          const Positioned.fill(
-            child: FilmGrain(opacity: 0.035),
-          ),
+          const Positioned.fill(child: FilmGrain(opacity: 0.035)),
 
-          // Vignette
-          const Positioned.fill(
-            child: SoftVignette(intensity: 1.15),
-          ),
+          const Positioned.fill(child: SoftVignette(intensity: 1.15)),
 
           SafeArea(
             child: Padding(
@@ -363,7 +366,6 @@ class _EntryScreenState extends State<EntryScreen>
             ),
           ),
 
-          // Cathartic White Flash
           AnimatedBuilder(
             animation: _flashController,
             builder: (context, _) {
@@ -448,14 +450,14 @@ class _EntryScreenState extends State<EntryScreen>
         final title = p > 0.75
             ? 'Let go.'
             : p > 0.35
-                ? 'It is enough.'
-                : 'What are you carrying?';
+            ? 'It is enough.'
+            : 'What are you carrying?';
 
         final subtitle = p > 0.1
             ? 'Hold tight or strike through to shatter it.'
             : _imprintedThought.isNotEmpty
-                ? 'Your burden is locked inside. Shatter it now.'
-                : 'Tilt your device. Press to dent. Swipe to strike.';
+            ? 'Your burden is locked inside. Shatter it now.'
+            : 'Tilt your device. Press to dent. Swipe to strike.';
 
         return Column(
           children: [
@@ -483,7 +485,6 @@ class _EntryScreenState extends State<EntryScreen>
   }
 
   Widget _buildSphere(bool compact) {
-    // Dynamically size the sphere to guarantee no overflow on any phone
     final sphereDiameter = compact ? 220.0 : 255.0;
 
     return Center(
@@ -492,7 +493,10 @@ class _EntryScreenState extends State<EntryScreen>
         height: sphereDiameter,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
+            final canvasSize = Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTapDown: (d) => _onPressStart(d.localPosition, canvasSize),
@@ -549,8 +553,12 @@ class _EntryScreenState extends State<EntryScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              _imprintedThought.isNotEmpty ? Icons.lock_outline_rounded : Icons.edit_note_rounded,
-              color: _imprintedThought.isNotEmpty ? AppColors.glassBlue : AppColors.paperLight,
+              _imprintedThought.isNotEmpty
+                  ? Icons.lock_outline_rounded
+                  : Icons.edit_note_rounded,
+              color: _imprintedThought.isNotEmpty
+                  ? AppColors.glassBlue
+                  : AppColors.paperLight,
               size: 16,
             ),
             const SizedBox(width: 8),
@@ -559,7 +567,9 @@ class _EntryScreenState extends State<EntryScreen>
                   ? 'Trapped: "$_imprintedThought"'
                   : 'Imprint a burden into crystal...',
               style: AppTextStyles.eyebrow.copyWith(
-                color: _imprintedThought.isNotEmpty ? AppColors.glassBlue : AppColors.paperLight,
+                color: _imprintedThought.isNotEmpty
+                    ? AppColors.glassBlue
+                    : AppColors.paperLight,
                 fontSize: 10,
               ),
             ),
@@ -583,11 +593,6 @@ class _EntryScreenState extends State<EntryScreen>
   }
 }
 
-/// Advanced CustomPainter simulating:
-/// - Liquid viscous deformation on touch
-/// - Gyroscope tilt glint & parallax internal smoke
-/// - Thought text trapped inside the crystalline nucleus
-/// - High-velocity 3D shard destruction
 class _LivingCrystalPainter extends CustomPainter {
   final double breathe;
   final double pressure;
@@ -619,13 +624,14 @@ class _LivingCrystalPainter extends CustomPainter {
       return;
     }
 
-    // Micro jitter under high strain
     final jitter = pressure > 0.5
-        ? (math.sin(DateTime.now().millisecondsSinceEpoch * 0.06) * pressure * 2.8)
+        ? (math.sin(DateTime.now().millisecondsSinceEpoch * 0.06) *
+              pressure *
+              2.8)
         : 0.0;
-    final r = baseRadius * (1.0 + (breathe * 0.05) + (pressure * 0.06)) + jitter;
+    final r =
+        baseRadius * (1.0 + (breathe * 0.05) + (pressure * 0.06)) + jitter;
 
-    // 1. Ambient Dynamic Parallax Glow
     final glowShift = Offset(-tiltX * 18, -tiltY * 18);
     final haloRadius = r * (1.35 + (breathe * 0.15) + (pressure * 0.25));
     final haloColor = Color.lerp(
@@ -642,7 +648,6 @@ class _LivingCrystalPainter extends CustomPainter {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 38),
     );
 
-    // 2. Liquid Elastic Body (Dent / Deform under finger)
     final touchCenter = Offset(
       center.dx + (touchPoint.dx - 0.5) * r * 1.5,
       center.dy + (touchPoint.dy - 0.5) * r * 1.5,
@@ -654,9 +659,9 @@ class _LivingCrystalPainter extends CustomPainter {
       final angle = (i * 2 * math.pi / steps);
       var currentR = r;
 
-      // Surface dent deformation toward touch
       if (indent > 0) {
-        final pointOnCirc = center + Offset(math.cos(angle) * r, math.sin(angle) * r);
+        final pointOnCirc =
+            center + Offset(math.cos(angle) * r, math.sin(angle) * r);
         final distToTouch = (pointOnCirc - touchCenter).distance;
         if (distToTouch < r * 0.7) {
           final dentFactor = (1.0 - (distToTouch / (r * 0.7))) * 12.0 * indent;
@@ -664,7 +669,9 @@ class _LivingCrystalPainter extends CustomPainter {
         }
       }
 
-      final pt = center + Offset(math.cos(angle) * currentR, math.sin(angle) * currentR);
+      final pt =
+          center +
+          Offset(math.cos(angle) * currentR, math.sin(angle) * currentR);
       if (i == 0) {
         bodyPath.moveTo(pt.dx, pt.dy);
       } else {
@@ -673,7 +680,6 @@ class _LivingCrystalPainter extends CustomPainter {
     }
     bodyPath.close();
 
-    // Core Gradient influenced by Gyroscope tilt
     final sphereRect = Rect.fromCircle(center: center, radius: r);
     final coreGradient = RadialGradient(
       center: Alignment(-0.35 + (tiltX * 0.4), -0.38 + (tiltY * 0.4)),
@@ -687,9 +693,11 @@ class _LivingCrystalPainter extends CustomPainter {
       stops: const [0.0, 0.32, 0.72, 1.0],
     );
 
-    canvas.drawPath(bodyPath, Paint()..shader = coreGradient.createShader(sphereRect));
+    canvas.drawPath(
+      bodyPath,
+      Paint()..shader = coreGradient.createShader(sphereRect),
+    );
 
-    // 3. Imprinted Thought Floating in Core
     canvas.save();
     canvas.clipPath(bodyPath);
 
@@ -703,7 +711,10 @@ class _LivingCrystalPainter extends CustomPainter {
           letterSpacing: 2.0,
           shadows: [
             Shadow(color: Colors.black.withValues(alpha: 0.8), blurRadius: 10),
-            Shadow(color: AppColors.glassBlue.withValues(alpha: 0.5), blurRadius: 15),
+            Shadow(
+              color: AppColors.glassBlue.withValues(alpha: 0.5),
+              blurRadius: 15,
+            ),
           ],
         ),
       );
@@ -720,7 +731,6 @@ class _LivingCrystalPainter extends CustomPainter {
       textPainter.paint(canvas, textOffset);
     }
 
-    // 4. Parallax Specular Tilt Sheen
     final specularOffset = Offset(
       center.dx + (-tiltX * r * 0.45) - 20,
       center.dy + (-tiltY * r * 0.45) - 20,
@@ -733,14 +743,12 @@ class _LivingCrystalPainter extends CustomPainter {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16),
     );
 
-    // 5. Cracks Radiating from Touch Point
     if (pressure > 0.05) {
       _paintDynamicCracks(canvas, touchCenter, r, pressure);
     }
 
     canvas.restore();
 
-    // 6. Crisp Outer Edge Glass Ring
     canvas.drawPath(
       bodyPath,
       Paint()
@@ -750,7 +758,12 @@ class _LivingCrystalPainter extends CustomPainter {
     );
   }
 
-  void _paintDynamicCracks(Canvas canvas, Offset impact, double radius, double progress) {
+  void _paintDynamicCracks(
+    Canvas canvas,
+    Offset impact,
+    double radius,
+    double progress,
+  ) {
     final crackPaint = Paint()
       ..color = const Color(0xFFEAFBFF)
       ..strokeWidth = 1.9
@@ -767,12 +780,21 @@ class _LivingCrystalPainter extends CustomPainter {
     for (int i = 0; i < crackCount; i++) {
       final angle = (i * 2 * math.pi / crackCount) + (i.isEven ? 0.15 : -0.12);
       final length = radius * 1.15 * progress;
-      final end = impact + Offset(math.cos(angle) * length, math.sin(angle) * length);
+      final end =
+          impact + Offset(math.cos(angle) * length, math.sin(angle) * length);
 
-      final bend1 = Offset.lerp(impact, end, 0.35)! +
-          Offset(math.sin(i * 4.0) * 8 * progress, math.cos(i * 3.0) * 8 * progress);
-      final bend2 = Offset.lerp(impact, end, 0.7)! -
-          Offset(math.sin(i * 5.0) * 6 * progress, math.cos(i * 2.0) * 6 * progress);
+      final bend1 =
+          Offset.lerp(impact, end, 0.35)! +
+          Offset(
+            math.sin(i * 4.0) * 8 * progress,
+            math.cos(i * 3.0) * 8 * progress,
+          );
+      final bend2 =
+          Offset.lerp(impact, end, 0.7)! -
+          Offset(
+            math.sin(i * 5.0) * 6 * progress,
+            math.cos(i * 2.0) * 6 * progress,
+          );
 
       final crack = Path()
         ..moveTo(impact.dx, impact.dy)
@@ -785,7 +807,8 @@ class _LivingCrystalPainter extends CustomPainter {
 
       if (i % 2 == 0 && progress > 0.4) {
         final bStart = bend1;
-        final bEnd = bStart +
+        final bEnd =
+            bStart +
             Offset(
               math.cos(angle + 0.8) * 24 * progress,
               math.sin(angle + 0.8) * 24 * progress,
@@ -796,7 +819,12 @@ class _LivingCrystalPainter extends CustomPainter {
     }
   }
 
-  void _paintExplodingShards(Canvas canvas, Offset center, double radius, double progress) {
+  void _paintExplodingShards(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double progress,
+  ) {
     const shardCount = 28;
     final fade = (1.0 - progress).clamp(0.0, 1.0);
     final travel = radius * 2.0 * Curves.easeOutCubic.transform(progress);
@@ -805,7 +833,8 @@ class _LivingCrystalPainter extends CustomPainter {
       final angle = (i * 2 * math.pi / shardCount) + (i.isEven ? 0.08 : -0.06);
       final dist = (radius * 0.22) + (travel * (0.75 + (i % 4) * 0.16));
 
-      final shardCenter = center + Offset(math.cos(angle) * dist, math.sin(angle) * dist);
+      final shardCenter =
+          center + Offset(math.cos(angle) * dist, math.sin(angle) * dist);
 
       final w = 12.0 + (i % 3) * 6.0;
       final h = 18.0 + (i % 4) * 8.0;
@@ -838,7 +867,6 @@ class _LivingCrystalPainter extends CustomPainter {
       canvas.restore();
     }
 
-    // Shockwave ring
     final shockwaveR = radius * (0.8 + progress * 2.3);
     canvas.drawCircle(
       center,

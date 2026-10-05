@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 
-/// Clear, one-tap action with a soft pressed state and a large touch target.
 class HeavyButton extends StatefulWidget {
   final VoidCallback onConfirm;
   final String label;

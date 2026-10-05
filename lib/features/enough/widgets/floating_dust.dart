@@ -2,13 +2,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 
-/// ENOUGH — Floating Dust Particles
-///
-/// HOME FEELING:
-/// - Like dust in warm evening sunlight
-/// - Visible enough to feel, not to distract
-/// - Configurable color for mood shifts
-/// - Slow, dreamy drift
 class FloatingDust extends StatefulWidget {
   final int particleCount;
   final double maxOpacity;
@@ -34,7 +27,7 @@ class _FloatingDustState extends State<FloatingDust>
   @override
   void initState() {
     super.initState();
-    // 35 second cycle - dreamy, slow
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 35),
@@ -82,16 +75,16 @@ class _DustParticle {
   final double blinkPhase;
 
   _DustParticle(Random random, double maxOpacity)
-      : x = random.nextDouble(),
-        startY = random.nextDouble(),
-        // Bigger particles (4-7px) - more visible, like real dust
-        size = 4.0 + random.nextDouble() * 3.0,
-        // Very slow (0.10-0.20)
-        speed = 0.10 + random.nextDouble() * 0.10,
-        // Higher opacity for visibility
-        baseOpacity = 0.06 + random.nextDouble() * (maxOpacity - 0.06),
-        phase = random.nextDouble() * 2 * pi,
-        blinkPhase = random.nextDouble() * 2 * pi;
+    : x = random.nextDouble(),
+      startY = random.nextDouble(),
+
+      size = 4.0 + random.nextDouble() * 3.0,
+
+      speed = 0.10 + random.nextDouble() * 0.10,
+
+      baseOpacity = 0.06 + random.nextDouble() * (maxOpacity - 0.06),
+      phase = random.nextDouble() * 2 * pi,
+      blinkPhase = random.nextDouble() * 2 * pi;
 }
 
 class _DustPainter extends CustomPainter {
@@ -111,11 +104,9 @@ class _DustPainter extends CustomPainter {
       final animProgress = (progress * particle.speed + particle.startY) % 1.0;
       final y = size.height * (1 - animProgress);
 
-      // Gentle horizontal drift
       final driftOffset = sin(progress * pi * 0.4 + particle.phase) * 25;
       final x = size.width * particle.x + driftOffset;
 
-      // Fade in/out
       double fadeOpacity = particle.baseOpacity;
       if (animProgress < 0.15) {
         fadeOpacity *= animProgress / 0.15;
@@ -123,22 +114,16 @@ class _DustPainter extends CustomPainter {
         fadeOpacity *= (1 - animProgress) / 0.15;
       }
 
-      // Subtle blink (±15%)
       final blinkValue = sin(progress * 0.5 * 2 * pi + particle.blinkPhase);
       fadeOpacity *= (0.85 + blinkValue * 0.15);
 
       if (fadeOpacity < 0.02) continue;
 
-      // Use configurable color
       final paint = Paint()
         ..color = color.withValues(alpha: fadeOpacity)
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, particle.size * 1.5);
 
-      canvas.drawCircle(
-        Offset(x, y),
-        particle.size,
-        paint,
-      );
+      canvas.drawCircle(Offset(x, y), particle.size, paint);
     }
   }
 

@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 
-/// ENOUGH — Soft Vignette Overlay
-/// 
-/// Creates atmospheric depth with a radial gradient
-/// that darkens the edges of the screen.
 class SoftVignette extends StatelessWidget {
   final double intensity;
-  
-  const SoftVignette({
-    super.key,
-    this.intensity = 1.0,
-  });
+
+  const SoftVignette({super.key, this.intensity = 1.0});
 
   @override
   Widget build(BuildContext context) {
