@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="assets/icon/app_icon.png" width="110" height="110" alt="ENOUGH App Icon" style="border-radius: 28px; box-shadow: 0 10px 30px rgba(98, 93, 184, 0.4);" />
+  <img src="assets/icon/icon.png" width="110" height="110" alt="ENOUGH App Icon" style="border-radius: 28px; box-shadow: 0 10px 30px rgba(98, 93, 184, 0.4);" />
 
   # ENOUGH
   ### *A Sensory Release Ritual Crafted with Flutter*
